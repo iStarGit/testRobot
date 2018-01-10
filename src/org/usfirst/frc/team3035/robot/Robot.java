@@ -39,7 +39,7 @@ public class Robot extends IterativeRobot {
 	
 	Timer timer; 
 	
-	Joystick player1, player2; 
+	Joystick player1 = new Joystick(1), player2 = new Joystick (2); 
 	/**
 	 * This function is run when the robot is first started up and should be
 	 * used for any initialization code.
@@ -100,6 +100,15 @@ public class Robot extends IterativeRobot {
 	 */
 	@Override
 	public void teleopPeriodic() {
+		//simple drivetrain
+		
+		double left = (player1.getRawAxis(1) * -1); // *-1 to inverse left side
+		double right = player1.getRawAxis(5);
+		
+		LF.set(left);
+		LB.set(left);
+		RF.set(right);
+		RB.set(right);
 	}
 
 	/**
