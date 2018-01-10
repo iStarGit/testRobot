@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------------*/
-/* Copyright (c) 2017-2018 FIRST. All Rights Reserved.                        */ 
+/* Copyright (c) 2017-2018 FIRST. All Rights Reserved.                        */  
 /* Open Source Software - may be modified and shared by FRC teams. The code   */
 /* must be accompanied by the FIRST BSD license file in the root directory of */
 /* the project.                                                               */
@@ -37,6 +37,7 @@ public class Robot extends IterativeRobot {
 	DoubleSolenoid exDbl = new DoubleSolenoid(1,2);
 	
 	Spark LF, LB, RF, RB;
+	Spark leftFront = new Spark(0);
 	
 	Timer timer; 
 	
