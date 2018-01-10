@@ -35,6 +35,7 @@ public class Robot extends IterativeRobot {
 	Compressor compressor = new Compressor(0);
 	Solenoid exSolo = new Solenoid(1);
 	DoubleSolenoid exDbl = new DoubleSolenoid(1,2);
+	//Ricky doesn't understand how to program
 	
 	Spark LF, LB, RF, RB;
 	Spark leftFront = new Spark(0);
