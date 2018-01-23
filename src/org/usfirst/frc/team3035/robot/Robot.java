@@ -9,7 +9,6 @@ package org.usfirst.frc.team3035.robot;
 
 import edu.wpi.first.wpilibj.Compressor;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
-import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.IterativeRobot;
 import edu.wpi.first.wpilibj.Joystick;
@@ -110,23 +109,6 @@ public class Robot extends IterativeRobot {
 		LB.set(left);
 		RF.set(right);
 		RB.set(right);
-		
-		if(player2.getRawButton(2))
-		{
-			exDbl.set(Value.kForward);
-		}
-		
-		else if (player2.getRawButton(3))
-		{
-			exDbl.set(Value.kReverse);
-		}
-		
-		else if (player2.getRawButton(4))
-		{
-			exDbl.set(Value.kOff);
-		}
-		
-		
 	}
 
 	/**
