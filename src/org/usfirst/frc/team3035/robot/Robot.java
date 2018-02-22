@@ -7,6 +7,10 @@
 // TESTING
 package org.usfirst.frc.team3035.robot;
 
+import org.opencv.video.KalmanFilter;
+
+import com.kauailabs.navx.frc.AHRS;
+
 import edu.wpi.first.wpilibj.Compressor;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
@@ -33,10 +37,13 @@ public class Robot extends IterativeRobot {
 	private SendableChooser<String> m_chooser = new SendableChooser<>();
 	
 	String gameData; // returns L or R in a string of 3 chars, in order corresponding to your alliance
-	Compressor compressor = new Compressor(0);
-	Solenoid exSolo = new Solenoid(1);
-	DoubleSolenoid exDbl = new DoubleSolenoid(1,2);
-	Spark LF = new Spark(0), LB = new Spark(1), RF = new Spark(2), RB = new Spark(3); 
+	AHRS ahrs;
+	Compressor compressor;
+	DoubleSolenoid exSoloIn;
+	DoubleSolenoid exSoloIn2;
+	Spark LF, LB, RF, RB; 
+	Spark iLF, iLB, iRF, iRB;
+	Spark lift;
 	
 	Timer timer; 
 	
@@ -50,15 +57,30 @@ public class Robot extends IterativeRobot {
 		m_chooser.addDefault("Default Auto", kDefaultAuto);
 		m_chooser.addObject("My Auto", kCustomAuto);
 		SmartDashboard.putData("Auto choices", m_chooser);
-	
+		LF= new Spark(4);
+		LB = new Spark(3); 
+		RF = new Spark(2);
+		RB = new Spark(1); 
+		iLF= new Spark(8);
+		iLB = new Spark(7); 
+		iRF = new Spark(9);
+		iRB = new Spark(6);
+		lift = new Spark(5);
+		
+		compressor = new Compressor(0);
+		
+		exSoloIn = new DoubleSolenoid(1, 0);
+		exSoloIn2 = new DoubleSolenoid(2, 3);
+		
+		compressor.start();
 		
 		gameData =  DriverStation.getInstance().getGameSpecificMessage(); // to test, go onto	
 		// driver station software and enter game datal
 		
-		if (gameData.charAt(0) == 'L') // or 'R'; 1 for scale, 2 for opposing switch
+		/*if (gameData.charAt(0) == 'L') // or 'R'; 1 for scale, 2 for opposing switch
 		{
 			
-		}
+		}*/
 	}
 
 	/**
@@ -103,27 +125,76 @@ public class Robot extends IterativeRobot {
 	public void teleopPeriodic() {
 		//simple drivetrain
 		
-		double left = (player1.getRawAxis(1) * -1); // *-1 to inverse left side
-		double right = player1.getRawAxis(5);
+		double left = (player2.getRawAxis(1) * -1); // *-1 to inverse left side | left_stick_y
+		double right = player2.getRawAxis(5); // right_stick_y
 		
+		double intake = (player1.getRawAxis(2) ); // left trigger
+		double intake2 = (player1.getRawAxis(3)); // right trigger
+		
+		
+		double basket = (player1.getRawAxis(1) * -1); // left_stick_y
+		
+		double actBasket;
+		if (basket >= 0.5)
+		{
+			actBasket = 0.5;
+		}
+		
+		else if (basket >= -1)
+		{
+			actBasket = -1;
+		}
+	
 		LF.set(left);
 		LB.set(left);
 		RF.set(right);
 		RB.set(right);
 		
-		if(player2.getRawButton(2))
+		lift.set(basket);
+		
+		if (player2.getRawButton(5) && intake >= 0.5) { // left bumper
+			midtake();
+		}
+	
+		else {
+			stopMotors();
+		}
+		if (intake >= 0.5)
 		{
-			exDbl.set(Value.kForward);
+			intake();
 		}
 		
-		else if (player2.getRawButton(3))
+		else if (intake2 >= 0.5)
 		{
-			exDbl.set(Value.kReverse);
+			outtake();
 		}
 		
-		else if (player2.getRawButton(4))
+		else
 		{
-			exDbl.set(Value.kOff);
+			stopMotors();
+		}
+		
+		if(player1.getRawButton(2)) // x button
+		{
+			exSoloIn.set(DoubleSolenoid.Value.kForward);
+			exSoloIn2.set(DoubleSolenoid.Value.kForward);
+		}
+		
+		else if (player1.getRawButton(3)) // y button
+		{
+			exSoloIn.set(DoubleSolenoid.Value.kReverse);
+			exSoloIn2.set(DoubleSolenoid.Value.kReverse);
+		}
+		
+		
+		if(player1.getRawButton(1)) // b button
+		{
+			compressor.setClosedLoopControl(true);
+		}
+		
+		else if(player1.getRawButton(4)) // left bumper
+		{
+			compressor.setClosedLoopControl(false);
 		}
 		
 		
@@ -135,4 +206,43 @@ public class Robot extends IterativeRobot {
 	@Override
 	public void testPeriodic() {
 	}
+	
+	public void intake() {
+		iLB.set(.5);
+		iLF.set(.5);
+		iRB.set(.5);
+		iRF.set(-.5);
+	}
+	
+		public void outtake() {
+			iLB.set(-.6);
+			iLF.set(-.4);
+			iRB.set(.6);
+			iRF.set(.4);
+		}
+		
+		public void midtake() {
+			//iLB.set(.3);
+			iLF.set(.5);
+			//iRB.set(-.3);
+			iRF.set(-.5);
+		}
+		
+		public void mistake() {
+				//iLB.set(.3);
+				iLF.set(-.5);
+				//iRB.set(-.3);
+				iRF.set(.5);
+
+		}
+		
+		public void stopMotors() {
+			iLB.set(0);
+			iLF.set(0);
+			iRB.set(0);
+			iRF.set(0);
+		}
+	
 }
+
+
