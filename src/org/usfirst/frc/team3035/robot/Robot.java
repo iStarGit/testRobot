@@ -17,9 +17,14 @@ import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.IterativeRobot;
 import edu.wpi.first.wpilibj.Joystick;
+import edu.wpi.first.wpilibj.PIDController;
+import edu.wpi.first.wpilibj.PIDOutput;
+import edu.wpi.first.wpilibj.SPI.Port;
 import edu.wpi.first.wpilibj.Solenoid;
 import edu.wpi.first.wpilibj.Spark;
 import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.drive.DifferentialDrive;
+import edu.wpi.first.wpilibj.livewindow.LiveWindow;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
@@ -30,7 +35,8 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
  * creating this project, you must also update the build.properties file in the
  * project.
  */
-public class Robot extends IterativeRobot {
+public class Robot extends IterativeRobot implements PIDOutput
+{
 	private static final String kDefaultAuto = "Default";
 	private static final String kCustomAuto = "My Auto";
 	private String m_autoSelected;
@@ -38,20 +44,36 @@ public class Robot extends IterativeRobot {
 	
 	String gameData; // returns L or R in a string of 3 chars, in order corresponding to your alliance
 	AHRS ahrs;
-	Compressor compressor;
-	DoubleSolenoid exSoloIn;
-	DoubleSolenoid exSoloIn2;
+	
 	Spark LF, LB, RF, RB; 
 	Spark iLF, iLB, iRF, iRB;
 	Spark lift;
 	
 	Timer timer; 
+	PIDController turnController;
+	double rotateToAngleRate;
 	
 	Joystick player1 = new Joystick(1), player2 = new Joystick (2); 
+	
+	static final double kP = 0.03;
+    static final double kI = 0.00;
+    static final double kD = 0.00;
+    static final double kF = 0.00;
+    
+    static final double kToleranceDegrees = 2.0f;    
+    
+    static final double kTargetAngleDegrees = 90.0f;
+	/*
+	Compressor compressor;
+	DoubleSolenoid exSoloIn;
+	DoubleSolenoid exSoloIn2;
+	 */
+	
 	/**
 	 * This function is run when the robot is first started up and should be
 	 * used for any initialization code.
 	 */
+	@SuppressWarnings("deprecation")
 	@Override
 	public void robotInit() {
 		m_chooser.addDefault("Default Auto", kDefaultAuto);
@@ -67,12 +89,14 @@ public class Robot extends IterativeRobot {
 		iRB = new Spark(6);
 		lift = new Spark(5);
 		
+		/*
 		compressor = new Compressor(0);
 		
 		exSoloIn = new DoubleSolenoid(1, 0);
 		exSoloIn2 = new DoubleSolenoid(2, 3);
 		
 		compressor.start();
+		*/
 		
 		gameData =  DriverStation.getInstance().getGameSpecificMessage(); // to test, go onto	
 		// driver station software and enter game datal
@@ -81,7 +105,37 @@ public class Robot extends IterativeRobot {
 		{
 			
 		}*/
+		
+	        
+	try {
+				/***********************************************************************
+				 * navX-MXP:
+				 * - Communication via RoboRIO MXP (SPI, I2C, TTL UART) and USB.            
+				 * - See http://navx-mxp.kauailabs.com/guidance/selecting-an-interface.
+				 * 
+				 * navX-Micro:
+				 * - Communication via I2C (RoboRIO MXP or Onboard) and USB.
+				 * - See http://navx-micro.kauailabs.com/guidance/selecting-an-interface.
+				 * 
+				 * Multiple navX-model devices on a single robot are supported.
+				 ************************************************************************/
+	            ahrs = new AHRS(Port.kMXP); 
+	        } catch (RuntimeException ex ) {
+	            DriverStation.reportError("Error instantiating navX MXP:  " + ex.getMessage(), true);
 	}
+	
+	turnController = new PIDController(kP, kI, kD, kF, ahrs, this);
+    turnController.setInputRange(-180.0f,  180.0f);
+    turnController.setOutputRange(-1.0, 1.0);
+    turnController.setAbsoluteTolerance(kToleranceDegrees);
+    turnController.setContinuous(true);
+    turnController.disable();
+    
+    /* Add the PID Controller to the Test-mode dashboard, allowing manual  */
+    /* tuning of the Turn Controller's P, I and D coefficients.            */
+    /* Typically, only the P value needs to be modified.                   */
+    LiveWindow.addActuator("DriveSystem", "RotateController", turnController);	
+    }
 
 	/**
 	 * This autonomous (along with the chooser code above) shows how to select
@@ -173,7 +227,7 @@ public class Robot extends IterativeRobot {
 		{
 			stopMotors();
 		}
-		
+		/*
 		if(player1.getRawButton(2)) // x button
 		{
 			exSoloIn.set(DoubleSolenoid.Value.kForward);
@@ -196,7 +250,7 @@ public class Robot extends IterativeRobot {
 		{
 			compressor.setClosedLoopControl(false);
 		}
-		
+		*/
 		
 	}
 
@@ -205,6 +259,68 @@ public class Robot extends IterativeRobot {
 	 */
 	@Override
 	public void testPeriodic() {
+		
+		double left = (player2.getRawAxis(1) * -1); // *-1 to inverse left side | left_stick_y
+		double right = player2.getRawAxis(5); // right_stick_y
+		
+		if ( player1.getRawButton(0)) {
+    		/* While this button is held down, rotate to target angle.  
+    		 * Since a Tank drive system cannot move forward simultaneously 
+    		 * while rotating, all joystick input is ignored until this
+    		 * button is released.
+    		 */
+    		if (!turnController.isEnabled()) {
+    			turnController.setSetpoint(kTargetAngleDegrees);
+    			rotateToAngleRate = 0; // This value will be updated in the pidWrite() method.
+    			turnController.enable();
+    		}
+    		double leftStickValue = rotateToAngleRate;
+    		double rightStickValue = rotateToAngleRate;
+    		
+    		LF.set(leftStickValue);
+    		LB.set(leftStickValue);
+    		
+    		RF.set(rightStickValue);
+    		RB.set(rightStickValue);
+    		
+    	} else if ( player1.getRawButton(1)) {
+    		/* "Zero" the yaw (whatever direction the sensor is 
+    		 * pointing now will become the new "Zero" degrees.
+    		 */
+    		ahrs.zeroYaw();
+    	} else if ( player1.getRawButton(2)) {
+    		/* While this button is held down, the robot is in
+    		 * "drive straight" mode.  Whatever direction the robot
+    		 * was heading when "drive straight" mode was entered
+    		 * will be maintained.  The average speed of both 
+    		 * joysticks is the magnitude of motion.
+    		 */
+    		if(!turnController.isEnabled()) {
+    			// Acquire current yaw angle, using this as the target angle.
+    			turnController.setSetpoint(ahrs.getYaw());
+    			rotateToAngleRate = 0; // This value will be updated in the pidWrite() method.
+    			turnController.enable();
+    		}
+    		double magnitude = (player1.getRawAxis(1) + player1.getRawAxis(5)) / 2;
+    		double leftStickValue = magnitude + rotateToAngleRate;
+    		double rightStickValue = magnitude - rotateToAngleRate;
+    		LF.set(leftStickValue);
+    		LB.set(leftStickValue);
+    		
+    		RF.set(rightStickValue);
+    		RB.set(rightStickValue);
+    	} else {
+    		/* If the turn controller had been enabled, disable it now. */
+    		if(turnController.isEnabled()) {
+    			turnController.disable();
+    		}
+    		/* Standard tank drive, no driver assistance. */
+    		LF.set(left);
+    		LB.set(left);
+    		
+    		RF.set(right);
+    		RB.set(right);
+}
 	}
 	
 	public void intake() {
@@ -241,6 +357,11 @@ public class Robot extends IterativeRobot {
 			iLF.set(0);
 			iRB.set(0);
 			iRF.set(0);
+		}
+
+		@Override
+		public void pidWrite(double output) {
+			 rotateToAngleRate = output;
 		}
 	
 }
