@@ -13,7 +13,6 @@ import com.kauailabs.navx.frc.AHRS;
 
 import edu.wpi.first.wpilibj.Compressor;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
-import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.IterativeRobot;
 import edu.wpi.first.wpilibj.Joystick;
@@ -39,6 +38,7 @@ public class Robot extends IterativeRobot implements PIDOutput
 {
 	private static final String kDefaultAuto = "Default";
 	private static final String kCustomAuto = "My Auto";
+	// private static final String kMilesAuto = "Guess Auto";
 	private String m_autoSelected;
 	private SendableChooser<String> m_chooser = new SendableChooser<>();
 	
@@ -78,6 +78,7 @@ public class Robot extends IterativeRobot implements PIDOutput
 	public void robotInit() {
 		m_chooser.addDefault("Default Auto", kDefaultAuto);
 		m_chooser.addObject("My Auto", kCustomAuto);
+	  //m_chooser.addObject("Guess Auto", kMilesAuto);
 		SmartDashboard.putData("Auto choices", m_chooser);
 		LF= new Spark(4);
 		LB = new Spark(3); 
@@ -165,6 +166,18 @@ public class Robot extends IterativeRobot implements PIDOutput
 			case kCustomAuto:
 				// Put custom auto code here
 				break;
+				/*
+				 * case kMilesAuto:
+				 * timer.reset();
+				 * timer.start();
+				 * while (timer.get() < 4.5) {
+				 * LF.set(-.75);
+				 * LB.set(-.75);
+				 * RF.set(.75);
+				 * RB.set(.75);
+				 * }
+				 * break;
+				 */
 			case kDefaultAuto:
 			default:
 				// Put default auto code here
@@ -203,6 +216,7 @@ public class Robot extends IterativeRobot implements PIDOutput
 		LB.set(left);
 		RF.set(right);
 		RB.set(right);
+<<<<<<< HEAD
 		
 		lift.set(basket);
 		
@@ -252,6 +266,8 @@ public class Robot extends IterativeRobot implements PIDOutput
 		}
 		*/
 		
+=======
+>>>>>>> 5c8c9d0d3ee1895c8d73065514c3b236bb359f88
 	}
 
 	/**
