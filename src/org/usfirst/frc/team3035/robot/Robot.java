@@ -13,6 +13,7 @@ import com.kauailabs.navx.frc.AHRS;
 
 import edu.wpi.first.wpilibj.Compressor;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
+import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.IterativeRobot;
 import edu.wpi.first.wpilibj.Joystick;
@@ -22,10 +23,7 @@ import edu.wpi.first.wpilibj.SPI.Port;
 import edu.wpi.first.wpilibj.Solenoid;
 import edu.wpi.first.wpilibj.Spark;
 import edu.wpi.first.wpilibj.Timer;
-<<<<<<< HEAD
 import edu.wpi.first.wpilibj.Victor;
-=======
->>>>>>> ac32229bb909f9ebca1beafa0b4d5609e28219a8
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj.livewindow.LiveWindow;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
@@ -42,20 +40,15 @@ public class Robot extends IterativeRobot implements PIDOutput
 {
 	private static final String kDefaultAuto = "Default";
 	private static final String kCustomAuto = "My Auto";
-	// private static final String kMilesAuto = "Guess Auto";
 	private String m_autoSelected;
 	private SendableChooser<String> m_chooser = new SendableChooser<>();
 	
 	String gameData; // returns L or R in a string of 3 chars, in order corresponding to your alliance
 	AHRS ahrs;
 	
-//<<<<<<< HEAD
 	//Spark LF, LB, RF, RB; ACTUAL
 	Spark LF, LB;
 	Victor RF, RB;
-//=======
-	//Spark LF, LB, RF, RB; 
-//>>>>>>> ac32229bb909f9ebca1beafa0b4d5609e28219a8
 	Spark iLF, iLB, iRF, iRB;
 	Spark lift;
 	
@@ -65,23 +58,14 @@ public class Robot extends IterativeRobot implements PIDOutput
 	
 	Joystick player1 = new Joystick(1), player2 = new Joystick (2); 
 	
-//<<<<<<< HEAD
-	static final double kP = 0.045;
-    static final double kI = 0.005;
-//=======
-	static final double kP = 0.03;
+	static final double kP = 0.05;
     static final double kI = 0.00;
-//>>>>>>> ac32229bb909f9ebca1beafa0b4d5609e28219a8
     static final double kD = 0.00;
     static final double kF = 0.00;
     
     static final double kToleranceDegrees = 2.0f;    
     
-    //<<<<<<< HEAD
-    static final double kTargetAngleDegrees = 180.0f;
-    //=======
-    static final double kTargetAngleDegrees = 90.0f;
-    //>>>>>>> ac32229bb909f9ebca1beafa0b4d5609e28219a8
+    static final double kTargetAngleDegrees = -90.0f;
 	/*
 	Compressor compressor;
 	DoubleSolenoid exSoloIn;
@@ -97,7 +81,6 @@ public class Robot extends IterativeRobot implements PIDOutput
 	public void robotInit() {
 		m_chooser.addDefault("Default Auto", kDefaultAuto);
 		m_chooser.addObject("My Auto", kCustomAuto);
-	  //m_chooser.addObject("Guess Auto", kMilesAuto);
 		SmartDashboard.putData("Auto choices", m_chooser);
 		/*
 		LF= new Spark(4);
@@ -194,18 +177,6 @@ public class Robot extends IterativeRobot implements PIDOutput
 			case kCustomAuto:
 				// Put custom auto code here
 				break;
-				/*
-				 * case kMilesAuto:
-				 * timer.reset();
-				 * timer.start();
-				 * while (timer.get() < 4.5) {
-				 * LF.set(-.75);
-				 * LB.set(-.75);
-				 * RF.set(.75);
-				 * RB.set(.75);
-				 * }
-				 * break;
-				 */
 			case kDefaultAuto:
 			default:
 				// Put default auto code here
@@ -244,7 +215,6 @@ public class Robot extends IterativeRobot implements PIDOutput
 		LB.set(left);
 		RF.set(right);
 		RB.set(right);
-<<<<<<< HEAD
 		
 		lift.set(basket);
 		
@@ -294,11 +264,6 @@ public class Robot extends IterativeRobot implements PIDOutput
 		}
 		*/
 		
-<<<<<<< HEAD
-=======
-=======
->>>>>>> 5c8c9d0d3ee1895c8d73065514c3b236bb359f88
->>>>>>> ac32229bb909f9ebca1beafa0b4d5609e28219a8
 	}
 
 	/**
@@ -307,17 +272,10 @@ public class Robot extends IterativeRobot implements PIDOutput
 	@Override
 	public void testPeriodic() {
 		
-<<<<<<< HEAD
-		double left = (player2.getRawAxis(1) * -.5); // *-1 to inverse left side | left_stick_y
-		double right = (player2.getRawAxis(5) * 0.5); // right_stick_y
+		double left = (player2.getRawAxis(1) * -.65); // *-1 to inverse left side | left_stick_y
+		double right = (player2.getRawAxis(5) * 0.6); // right_stick_y
 		
 		if ( player2.getRawButton(1)) {
-=======
-		double left = (player2.getRawAxis(1) * -1); // *-1 to inverse left side | left_stick_y
-		double right = player2.getRawAxis(5); // right_stick_y
-		
-		if ( player1.getRawButton(0)) {
->>>>>>> ac32229bb909f9ebca1beafa0b4d5609e28219a8
     		/* While this button is held down, rotate to target angle.  
     		 * Since a Tank drive system cannot move forward simultaneously 
     		 * while rotating, all joystick input is ignored until this
@@ -331,7 +289,6 @@ public class Robot extends IterativeRobot implements PIDOutput
     		double leftStickValue = rotateToAngleRate;
     		double rightStickValue = rotateToAngleRate;
     		
-<<<<<<< HEAD
     		LF.set(leftStickValue * 0.5);
     		LB.set(leftStickValue * 0.5);
     		
@@ -339,24 +296,11 @@ public class Robot extends IterativeRobot implements PIDOutput
     		RB.set(rightStickValue * 0.5);
     		
     	} else if ( player2.getRawButton(3)) {
-=======
-    		LF.set(leftStickValue);
-    		LB.set(leftStickValue);
-    		
-    		RF.set(rightStickValue);
-    		RB.set(rightStickValue);
-    		
-    	} else if ( player1.getRawButton(1)) {
->>>>>>> ac32229bb909f9ebca1beafa0b4d5609e28219a8
     		/* "Zero" the yaw (whatever direction the sensor is 
     		 * pointing now will become the new "Zero" degrees.
     		 */
     		ahrs.zeroYaw();
-<<<<<<< HEAD
     	} else if ( player2.getRawButton(2)) {
-=======
-    	} else if ( player1.getRawButton(2)) {
->>>>>>> ac32229bb909f9ebca1beafa0b4d5609e28219a8
     		/* While this button is held down, the robot is in
     		 * "drive straight" mode.  Whatever direction the robot
     		 * was heading when "drive straight" mode was entered
@@ -369,7 +313,6 @@ public class Robot extends IterativeRobot implements PIDOutput
     			rotateToAngleRate = 0; // This value will be updated in the pidWrite() method.
     			turnController.enable();
     		}
-<<<<<<< HEAD
     		double magnitude = (player2.getRawAxis(1) + player2.getRawAxis(5)) / 2;
     		double leftStickValue = magnitude + rotateToAngleRate;
     		double rightStickValue = magnitude - rotateToAngleRate;
@@ -378,16 +321,6 @@ public class Robot extends IterativeRobot implements PIDOutput
     		
     		RF.set(rightStickValue * 0.5);
     		RB.set(rightStickValue * 0.5);
-=======
-    		double magnitude = (player1.getRawAxis(1) + player1.getRawAxis(5)) / 2;
-    		double leftStickValue = magnitude + rotateToAngleRate;
-    		double rightStickValue = magnitude - rotateToAngleRate;
-    		LF.set(leftStickValue);
-    		LB.set(leftStickValue);
-    		
-    		RF.set(rightStickValue);
-    		RB.set(rightStickValue);
->>>>>>> ac32229bb909f9ebca1beafa0b4d5609e28219a8
     	} else {
     		/* If the turn controller had been enabled, disable it now. */
     		if(turnController.isEnabled()) {
@@ -444,5 +377,3 @@ public class Robot extends IterativeRobot implements PIDOutput
 		}
 	
 }
-
-
