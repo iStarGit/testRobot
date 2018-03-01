@@ -58,9 +58,9 @@ public class Robot extends IterativeRobot implements PIDOutput
 	
 	Joystick player1 = new Joystick(1), player2 = new Joystick (2); 
 	
-	static final double kP = 0.05;
-    static final double kI = 0.00;
-    static final double kD = 0.00;
+	static final double kP = 0.175;
+    static final double kI = 0.01;
+    static final double kD = 0.115;
     static final double kF = 0.00;
     
     static final double kToleranceDegrees = 2.0f;    
@@ -101,6 +101,7 @@ public class Robot extends IterativeRobot implements PIDOutput
 		iRB = new Spark(6);
 		lift = new Spark(5);
 		
+		timer = new Timer();
 		/*
 		compressor = new Compressor(0);
 		
@@ -166,6 +167,10 @@ public class Robot extends IterativeRobot implements PIDOutput
 		// autoSelected = SmartDashboard.getString("Auto Selector",
 		// defaultAuto);
 		System.out.println("Auto selected: " + m_autoSelected);
+
+		turnController.disable();
+		timer.reset();
+		timer.start();
 	}
 
 	/**
@@ -173,7 +178,8 @@ public class Robot extends IterativeRobot implements PIDOutput
 	 */
 	@Override
 	public void autonomousPeriodic() {
-		switch (m_autoSelected) {
+		
+		/*switch (m_autoSelected) {
 			case kCustomAuto:
 				// Put custom auto code here
 				break;
@@ -181,8 +187,52 @@ public class Robot extends IterativeRobot implements PIDOutput
 			default:
 				// Put default auto code here
 				break;
-		}
-	}
+				*/
+		
+			//if(timer.get() < 2.0) 
+			//{
+				
+			/*	
+				if(!turnController.isEnabled())
+				{
+				turnController.setSetpoint(-90);
+				rotateToAngleRate = 0;
+				turnController.enable();
+				}
+				LF.set(rotateToAngleRate * 0.5);
+				LB.set(rotateToAngleRate * 0.5);
+				RF.set(rotateToAngleRate * 0.5);
+				RB.set(rotateToAngleRate * 0.5);
+			//}
+			*/
+		
+			if(timer.get() < 3)
+			{
+			if(!turnController.isEnabled())
+			{
+			turnController.setSetpoint(ahrs.getYaw());
+			rotateToAngleRate = 0;
+			turnController.enable();
+			}
+			LF.set((.5 + rotateToAngleRate) * 0.5);
+			LB.set((.5 + rotateToAngleRate) * 0.5);
+			RF.set((-.5 - rotateToAngleRate) * 0.5);
+			RB.set((-.5 - rotateToAngleRate) * 0.5);
+			}
+			//}
+			else 
+			{
+				
+				LF.set(0);
+				LB.set(0);
+				RF.set(0);
+				RB.set(0);
+		//	
+		
+		 
+		
+	}}
+	
 
 	/**
 	 * This function is called periodically during operator control.
@@ -269,12 +319,43 @@ public class Robot extends IterativeRobot implements PIDOutput
 	/**
 	 * This function is called periodically during test mode.
 	 */
+	boolean driveToggle = false; // false means Tank Drive, true means Arcade Drive.
+	boolean driveLastPass = false;
 	@Override
 	public void testPeriodic() {
 		
 		double left = (player2.getRawAxis(1) * -.65); // *-1 to inverse left side | left_stick_y
 		double right = (player2.getRawAxis(5) * 0.6); // right_stick_y
 		
+		double turn = (player2.getRawAxis(1) * -0.75); //  left stick  y
+		double power = (player2.getRawAxis(4) * 0.75); // right stick x8
+		
+		boolean backPressed = (player2.getRawButton(7)); // select/back button
+		
+		if (backPressed && driveToggle == false) {
+			driveToggle = true;
+		}
+		
+		else if (backPressed && driveToggle == true) {
+			driveToggle = false;
+		}
+		
+		if (driveToggle == true) {
+    		LF.set(power + turn);
+    		LB.set(power + turn);
+    		
+    		RF.set(power - turn);
+    		RB.set(power - turn);	
+		}
+		
+		else {
+    		LF.set(left);
+    		LB.set(left);
+    		
+    		RF.set(right);
+    		RB.set(right);	
+    		driveLastPass = backPressed;
+		}
 		if ( player2.getRawButton(1)) {
     		/* While this button is held down, rotate to target angle.  
     		 * Since a Tank drive system cannot move forward simultaneously 
@@ -295,6 +376,25 @@ public class Robot extends IterativeRobot implements PIDOutput
     		RF.set(rightStickValue * 0.5);
     		RB.set(rightStickValue * 0.5);
     		
+    		if (Math.abs(ahrs.getAngle() - kTargetAngleDegrees) <= 3 ) {
+        	LF.set(leftStickValue * 0.1);
+        	LB.set(leftStickValue * 0.1);
+        		
+        	RF.set(rightStickValue * 0.1);
+    	RB.set(rightStickValue * 0.1);
+    		}
+    		
+    		else {
+        	LF.set(leftStickValue * 0.5);
+        	LB.set(leftStickValue * 0.5);
+        		
+        	RF.set(rightStickValue * 0.5);
+        	RB.set(rightStickValue * 0.5);
+    		}
+    		
+    	 System.out.print(ahrs.getAngle());
+    	 System.out.println();
+    	 
     	} else if ( player2.getRawButton(3)) {
     		/* "Zero" the yaw (whatever direction the sensor is 
     		 * pointing now will become the new "Zero" degrees.
@@ -316,8 +416,8 @@ public class Robot extends IterativeRobot implements PIDOutput
     		double magnitude = (player2.getRawAxis(1) + player2.getRawAxis(5)) / 2;
     		double leftStickValue = magnitude + rotateToAngleRate;
     		double rightStickValue = magnitude - rotateToAngleRate;
-    		LF.set(leftStickValue * 0.5);
-    		LB.set(leftStickValue * 0.5);
+    		LF.set(leftStickValue * -0.5);
+    		LB.set(leftStickValue * -0.5);
     		
     		RF.set(rightStickValue * 0.5);
     		RB.set(rightStickValue * 0.5);
@@ -327,11 +427,13 @@ public class Robot extends IterativeRobot implements PIDOutput
     			turnController.disable();
     		}
     		/* Standard tank drive, no driver assistance. */
-    		LF.set(left);
+    		
+    		/*LF.set(left);
     		LB.set(left);
     		
     		RF.set(right);
     		RB.set(right);
+    		*/
 }
 	}
 	
