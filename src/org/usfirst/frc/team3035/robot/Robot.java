@@ -84,6 +84,8 @@ public class Robot extends IterativeRobot implements PIDOutput
         m_chooser.addDefault("Default Auto", kDefaultAuto);
         m_chooser.addObject("My Auto", kCustomAuto);
         SmartDashboard.putData("Auto choices", m_chooser);
+        
+
         /*
         LF= new Spark(4);
         LB = new Spark(3); 
@@ -163,25 +165,84 @@ public class Robot extends IterativeRobot implements PIDOutput
      * the switch structure below with additional strings. If using the
      * SendableChooser make sure to add them to the chooser code above as well.
      */
+    boolean left = false;
+    boolean center = false;
+    boolean right = false;
+    
+    boolean leftScale = false;
+    boolean rightScale = false;
+    
+    boolean leftAndLeft = false;
+    boolean leftAndRight = false;
+    boolean centerAndLeft = false;
+    boolean centerAndRight = false;
+    boolean rightAndLeft = false;
+    boolean rightAndRight = false;
     @Override
     public void autonomousInit() {
         m_autoSelected = m_chooser.getSelected();
         // autoSelected = SmartDashboard.getString("Auto Selector",
         // defaultAuto);
         System.out.println("Auto selected: " + m_autoSelected);
-
+        gameData =  DriverStation.getInstance().getGameSpecificMessage(); // to test, go onto    
+        // driver station software and enter game datal
+        
+        if (gameData.charAt(0) == 'L') // or 'R'; 1 for scale, 2 for opposing switch
+        {
+            leftScale = true;
+        }
+        else if (gameData.charAt(0) == 'R') {
+        	rightScale = true;
+        }
         turnController.disable();
         timer.reset();
         timer.start();
         ahrs.zeroYaw();
+        
+        if (left && leftScale) {
+        	leftAndLeft = true;
+        }
+        else if (left && rightScale) {
+        	leftAndRight = true;
+        }
+        else if (center && leftScale) {
+        	centerAndLeft = true;
+        }
+        else if (center && rightScale) {
+        	centerAndRight = true;
+        }
+        else if (right && leftScale) {
+        	rightAndLeft = true;
+        }
+        else if (right && rightScale) {
+        	rightAndRight = true;
+        }
     }
+   
 
     /**
      * This function is called periodically during autonomous.
      */
     @Override
     public void autonomousPeriodic() {
-        
+        if (leftAndLeft) { // start left and left switch
+        	
+        }
+        else if (leftAndRight) { // start left and right switch
+        	
+        }
+        else if (centerAndLeft) { // start center and left switch
+        	
+        }
+        else if (centerAndRight) { // start center and right switch
+        	
+        }
+        else if (rightAndLeft) { // start right and left switch
+        	
+        }
+        else if (rightAndRight) { // start right and right switch
+        	
+        }
         /*switch (m_autoSelected) {
             case kCustomAuto:
                 // Put custom auto code here
@@ -217,68 +278,29 @@ public class Robot extends IterativeRobot implements PIDOutput
             }
             
             target = ahrs.getYaw();
+            
+           if (Math.abs(RF.get() - LF.get()) <= .5 ) { // stops motors in case robot glitches out and turns indefinitely
+            	stopMotors();
+            }
+           
             while(timer.get() < 3)
             {
-                double leftSpeed; 
-                double rightSpeed;
-                
-                double currentPos = ahrs.getYaw(); 
-                
-                leftSpeed = 0.5 - (currentPos - target) / 100;
-                rightSpeed = (0.5 + (currentPos - target) / 100) * -1;
-                /*
-                // Left - negative - current pos = -1, target = 0
-                leftSpeed = 0.5;
-                rightSpeed = -0.5;
-                /*
-                LF.set((.5 + rotateToAngleRate) * 0.5);
-                LB.set((.5 + rotateToAngleRate) * 0.5);
-                RF.set((-.5 - rotateToAngleRate) * 0.5);
-                RB.set((-.5 - rotateToAngleRate) * 0.5);
-                */ 
-                
-                LB.set(leftSpeed);
-                LF.set(leftSpeed);
-                RF.set(rightSpeed);
-                RB.set(rightSpeed);
+               driveStraight(.5);
             }
+            
             while(timer.get() > 3.2 && timer.get() < 6) {
-            	turnController.setSetpoint(kTargetAngleDegrees);
-            	
-                double leftStickValue = rotateToAngleRate;
-                double rightStickValue = rotateToAngleRate;
-                
-                LF.set(leftStickValue * 0.5);
-                LB.set(leftStickValue * 0.5);
-                
-                RF.set(rightStickValue * 0.5);
-                RB.set(rightStickValue * 0.5);
-                
-                if (Math.abs(ahrs.getAngle() - kTargetAngleDegrees) <= 3 ) {
-                LF.set(leftStickValue * 0.1);
-                LB.set(leftStickValue * 0.1);
-                    
-                RF.set(rightStickValue * 0.1);
-                RB.set(rightStickValue * 0.1);
+            	turn(90);
                 }
-                
-                else {
-                LF.set(leftStickValue * 0.5);
-                LB.set(leftStickValue * 0.5);
-                    
-                RF.set(rightStickValue * 0.5);
-                RB.set(rightStickValue * 0.5);
-                }
-                
-                
-            	
+            
+            while(timer.get() > 6.2 && timer.get() < 9) {
+            	driveStraight(.3);
             }
-            System.out.print(ahrs.getAngle());
-                System.out.println();
-            LF.set(0);
-            LB.set(0);
-            RF.set(0);
-            RB.set(0);
+                
+                
+    
+            
+            
+           stopMotors();
             }
             
             
@@ -494,8 +516,6 @@ public class Robot extends IterativeRobot implements PIDOutput
             RB.set(right);
             */
 }
-        System.out.print(right);
-        System.out.println();
     }
     
     public void intake() {
@@ -533,10 +553,102 @@ public class Robot extends IterativeRobot implements PIDOutput
             iRB.set(0);
             iRF.set(0);
         }
+        
 
+        public void setGyro() {
+        	ahrs.zeroYaw();
+        }
+        public void driveStraight(double speed) {
+        	double leftSpeed; 
+            double rightSpeed;
+            
+            double currentPos = ahrs.getYaw(); 
+            
+            leftSpeed = 0.5 - (currentPos - target) / 100;
+            rightSpeed = (0.5 + (currentPos - target) / 100) * -1;
+            
+            leftSpeed = speed;
+            rightSpeed = speed;
+            /*
+            // Left - negative - current pos = -1, target = 0
+            leftSpeed = 0.5;
+            rightSpeed = -0.5;
+            /*
+            LF.set((.5 + rotateToAngleRate) * 0.5);
+            LB.set((.5 + rotateToAngleRate) * 0.5);
+            RF.set((-.5 - rotateToAngleRate) * 0.5);
+            RB.set((-.5 - rotateToAngleRate) * 0.5);
+            */ 
+            
+            LB.set(leftSpeed);
+            LF.set(leftSpeed);
+            RF.set(rightSpeed);
+            RB.set(rightSpeed);
+           
+        }
+        public void turnLeft() {
+        	turn(-90);
+        }
+        public void turnRight() {
+        	turn(90);
+        }
+        public void turn(double angle) {
+        	turnController.setSetpoint(angle);
+        	
+            double turnSpeed = rotateToAngleRate;
+            if (angle < 0) { // turning left
+            	LF.set(turnSpeed * 0.5);
+                LB.set(turnSpeed * 0.5);
+                
+                RF.set(turnSpeed * 0.5);
+                RB.set(turnSpeed * 0.5);
+                
+                if (Math.abs(ahrs.getAngle() - angle) <= 3 ) {
+                LF.set(turnSpeed * 0.1);
+                LB.set(turnSpeed * 0.1);
+                    
+                RF.set(turnSpeed * 0.1);
+                RB.set(turnSpeed * 0.1);
+                }
+                
+                else {
+                LF.set(turnSpeed * 0.5);
+                LB.set(turnSpeed * 0.5);
+                    
+                RF.set(turnSpeed * 0.5);
+                RB.set(turnSpeed * 0.5);
+                }	
+            }
+            else if (angle > 0) { //turning right
+            	LF.set(turnSpeed * -0.5);
+                LB.set(turnSpeed * -0.5);
+                
+                RF.set(turnSpeed * -0.5);
+                RB.set(turnSpeed * -0.5);
+                
+                if (Math.abs(ahrs.getAngle() - angle) <= 3 ) {
+                LF.set(turnSpeed * -0.1);
+                LB.set(turnSpeed * -0.1);
+                    
+                RF.set(turnSpeed * -0.1);
+                RB.set(turnSpeed * -0.1);
+                }
+                
+                else {
+                LF.set(turnSpeed * -0.5);
+                LB.set(turnSpeed * -0.5);
+                    
+                RF.set(turnSpeed * -0.5);
+                RB.set(turnSpeed * -0.5);
+                }
+            }
+         
+        }
         @Override
         public void pidWrite(double output) {
              rotateToAngleRate = output;
         }
+        
+        
     
 }
