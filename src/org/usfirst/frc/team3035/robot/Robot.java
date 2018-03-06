@@ -169,8 +169,8 @@ public class Robot extends IterativeRobot implements PIDOutput
     boolean center = false;
     boolean right = false;
     
-    boolean leftScale = false;
-    boolean rightScale = false;
+    boolean leftSwitch = false;
+    boolean rightSwitch = false;
     
     boolean leftAndLeft = false;
     boolean leftAndRight = false;
@@ -189,32 +189,32 @@ public class Robot extends IterativeRobot implements PIDOutput
         
         if (gameData.charAt(0) == 'L') // or 'R'; 1 for scale, 2 for opposing switch
         {
-            leftScale = true;
+            leftSwitch = true;
         }
         else if (gameData.charAt(0) == 'R') {
-        	rightScale = true;
+        	rightSwitch = true;
         }
         turnController.disable();
         timer.reset();
         timer.start();
         ahrs.zeroYaw();
         
-        if (left && leftScale) {
+        if (left && leftSwitch) {
         	leftAndLeft = true;
         }
-        else if (left && rightScale) {
+        else if (left && rightSwitch) {
         	leftAndRight = true;
         }
-        else if (center && leftScale) {
+        else if (center && leftSwitch) {
         	centerAndLeft = true;
         }
-        else if (center && rightScale) {
+        else if (center && rightSwitch) {
         	centerAndRight = true;
         }
-        else if (right && leftScale) {
+        else if (right && leftSwitch) {
         	rightAndLeft = true;
         }
-        else if (right && rightScale) {
+        else if (right && rightSwitch) {
         	rightAndRight = true;
         }
     }
@@ -225,23 +225,121 @@ public class Robot extends IterativeRobot implements PIDOutput
      */
     @Override
     public void autonomousPeriodic() {
+    	 if(!turnController.isEnabled())
+         {
+         target = ahrs.getYaw();
+         //turnController.setSetpoint(target);
+         rotateToAngleRate = 0;
+         turnController.enable();
+         }
+         target = ahrs.getYaw();
+         
         if (leftAndLeft) { // start left and left switch
-        	
+            if (Math.abs(RF.get() - LF.get()) >= 1 ) { // stops motors in case robot glitches out and turns indefinitely
+            	stopMotors();
+            }
+           timer.reset();
+           timer.start();
+            while(timer.get() < 3)
+            {
+               driveStraight(.5);
+            }
+            
+            while(timer.get() > 3.2 && timer.get() < 6) {
+            	turn(20);
+            }
+            
+            while(timer.get() > 6.2 && timer.get() < 9) {
+            	// outtake
+            }
+            if (timer.get() > 9.2) {
+            	stopMotors();
+            }
         }
         else if (leftAndRight) { // start left and right switch
-        	
+        	 if (Math.abs(RF.get() - LF.get()) >= 0.8) { // stops motors in case robot glitches out and turns indefinitely
+             	stopMotors();
+             }
+            timer.reset();
+            timer.start();
+             while(timer.get() < 5)
+             {
+                driveStraight(.5);
+             }
+         
+             if (timer.get() > 5.2) {
+             	stopMotors();
+             }
         }
         else if (centerAndLeft) { // start center and left switch
-        	
+       	 if (Math.abs(RF.get() - LF.get()) >= 0.8) { // stops motors in case robot glitches out and turns indefinitely
+          	stopMotors();
+          }
+         timer.reset();
+         timer.start();
+          while(timer.get() < 5)
+          {
+             driveStraight(.5);
+          }
+      
+          if (timer.get() > 5.2) {
+          	stopMotors();
+          }
         }
         else if (centerAndRight) { // start center and right switch
-        	
+       	 if (Math.abs(RF.get() - LF.get()) >= 0.8) { // stops motors in case robot glitches out and turns indefinitely
+          	stopMotors();
+          }
+         timer.reset();
+         timer.start();
+          while(timer.get() < 5)
+          {
+             driveStraight(.5);
+          }
+      
+          if (timer.get() > 5.2) {
+          	stopMotors();
+          }
         }
         else if (rightAndLeft) { // start right and left switch
-        	
+       	 if (Math.abs(RF.get() - LF.get()) >= 0.8) { // stops motors in case robot glitches out and turns indefinitely
+          	stopMotors();
+          }
+         timer.reset();
+         timer.start();
+          while(timer.get() < 5)
+          {
+             driveStraight(.5);
+          }
+      
+          if (timer.get() > 5.2) {
+          	stopMotors();
+          }	
         }
         else if (rightAndRight) { // start right and right switch
-        	
+        	 if (Math.abs(RF.get() - LF.get()) >= 1 ) { // stops motors in case robot glitches out and turns indefinitely
+             	stopMotors();
+             }
+            timer.reset();
+            timer.start();
+             while(timer.get() < 3)
+             {
+                driveStraight(.5);
+             }
+             
+             while(timer.get() > 3.2 && timer.get() < 6) {
+             	turn(-20);
+             }
+             
+             while(timer.get() > 6.2 && timer.get() < 9) {
+             	// outtake
+             }
+             if (timer.get() > 9.2) {
+             	stopMotors();
+             }
+        }
+        else {
+        	stopMotors();
         }
         /*switch (m_autoSelected) {
             case kCustomAuto:
@@ -269,32 +367,11 @@ public class Robot extends IterativeRobot implements PIDOutput
                 RB.set(rotateToAngleRate * 0.5);
             //}
             */
-            if(!turnController.isEnabled())
-            {
-            target = ahrs.getYaw();
-            //turnController.setSetpoint(target);
-            rotateToAngleRate = 0;
-            turnController.enable();
-            }
-            
-            target = ahrs.getYaw();
-            
-           if (Math.abs(RF.get() - LF.get()) <= .5 ) { // stops motors in case robot glitches out and turns indefinitely
-            	stopMotors();
-            }
            
-            while(timer.get() < 3)
-            {
-               driveStraight(.5);
-            }
             
-            while(timer.get() > 3.2 && timer.get() < 6) {
-            	turn(90);
-                }
+
             
-            while(timer.get() > 6.2 && timer.get() < 9) {
-            	driveStraight(.3);
-            }
+
                 
                 
     
