@@ -48,7 +48,7 @@ public class Robot extends IterativeRobot implements PIDOutput
     
     //Spark LF, LB, RF, RB; ACTUAL
     Spark LF, LB;
-    Victor RF, RB;
+    Victor RF, RB, flip, iL, iR;
     Spark iLF, iLB, iRF, iRB;
     Spark lift;
     
@@ -98,13 +98,17 @@ public class Robot extends IterativeRobot implements PIDOutput
         LB = new Spark(3);
         RF = new Victor(1);
         RB = new Victor(0);
-        
+        flip = new Victor(4);
+        iL = new Victor(5);
+        iR = new Victor(6); 
+     /*   
         iLF= new Spark(8);
         iLB = new Spark(7); 
         iRF = new Spark(9);
         iRB = new Spark(6);
         lift = new Spark(5);
-        
+        ACTUAL
+        */
         timer = new Timer();
         /*
         compressor = new Compressor(0);
@@ -634,6 +638,7 @@ public class Robot extends IterativeRobot implements PIDOutput
 
         public void setGyro() {
         	ahrs.zeroYaw();
+        	
         }
         public void driveStraight(double speed) {
         	double leftSpeed; 
