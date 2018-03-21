@@ -5,12 +5,21 @@
 /* the project.                                                               */
 /*----------------------------------------------------------------------------*/
 // TESTING
+/*----------------------------------------------------------------------------*/
+/* Copyright (c) 2017-2018 FIRST. All Rights Reserved.                        */  
+/* Open Source Software - may be modified and shared by FRC teams. The code   */
+/* must be accompanied by the FIRST BSD license file in the root directory of */
+/* the project.                                                               */
+/*----------------------------------------------------------------------------*/
+// TESTING
 package org.usfirst.frc.team3035.robot;
 
 import org.opencv.video.KalmanFilter;
 
 import com.kauailabs.navx.frc.AHRS;
 
+import edu.wpi.cscore.UsbCamera;
+import edu.wpi.first.wpilibj.CameraServer;
 import edu.wpi.first.wpilibj.Compressor;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
@@ -84,8 +93,10 @@ public class Robot extends IterativeRobot implements PIDOutput
         m_chooser.addDefault("Default Auto", kDefaultAuto);
         m_chooser.addObject("My Auto", kCustomAuto);
         SmartDashboard.putData("Auto choices", m_chooser);
+        UsbCamera camera = CameraServer.getInstance().startAutomaticCapture();
         
-
+        camera.setResolution(640, 480);
+        
         /*
         LF= new Spark(4);
         LB = new Spark(3); 
@@ -94,13 +105,13 @@ public class Robot extends IterativeRobot implements PIDOutput
         ACTUAL
         */
         
-        LF = new Spark(2);
-        LB = new Spark(3);
+        LF = new Spark(5);
+        LB = new Spark(6);
         RF = new Victor(1);
         RB = new Victor(0);
         flip = new Victor(4);
-        iL = new Victor(5);
-        iR = new Victor(6); 
+        iL = new Victor(2);
+        iR = new Victor(3); 
      /*   
         iLF= new Spark(8);
         iLB = new Spark(7); 
@@ -196,7 +207,7 @@ public class Robot extends IterativeRobot implements PIDOutput
             leftSwitch = true;
         }
         else if (gameData.charAt(0) == 'R') {
-        	rightSwitch = true;
+            rightSwitch = true;
         }
         turnController.disable();
         timer.reset();
@@ -204,22 +215,22 @@ public class Robot extends IterativeRobot implements PIDOutput
         ahrs.zeroYaw();
         
         if (left && leftSwitch) {
-        	leftAndLeft = true;
+            leftAndLeft = true;
         }
         else if (left && rightSwitch) {
-        	leftAndRight = true;
+            leftAndRight = true;
         }
         else if (center && leftSwitch) {
-        	centerAndLeft = true;
+            centerAndLeft = true;
         }
         else if (center && rightSwitch) {
-        	centerAndRight = true;
+            centerAndRight = true;
         }
         else if (right && leftSwitch) {
-        	rightAndLeft = true;
+            rightAndLeft = true;
         }
         else if (right && rightSwitch) {
-        	rightAndRight = true;
+            rightAndRight = true;
         }
     }
    
@@ -229,7 +240,7 @@ public class Robot extends IterativeRobot implements PIDOutput
      */
     @Override
     public void autonomousPeriodic() {
-    	 if(!turnController.isEnabled())
+         if(!turnController.isEnabled())
          {
          target = ahrs.getYaw();
          //turnController.setSetpoint(target);
@@ -240,7 +251,7 @@ public class Robot extends IterativeRobot implements PIDOutput
          
         if (leftAndLeft) { // start left and left switch
             if (Math.abs(RF.get() - LF.get()) >= 1 ) { // stops motors in case robot glitches out and turns indefinitely
-            	stopMotors();
+                stopMotors();
             }
            timer.reset();
            timer.start();
@@ -250,19 +261,19 @@ public class Robot extends IterativeRobot implements PIDOutput
             }
             
             while(timer.get() > 3.2 && timer.get() < 6) {
-            	turn(20);
+                turn(20);
             }
             
             while(timer.get() > 6.2 && timer.get() < 9) {
-            	// outtake
+                // outtake
             }
             if (timer.get() > 9.2) {
-            	stopMotors();
+                stopMotors();
             }
         }
         else if (leftAndRight) { // start left and right switch
-        	 if (Math.abs(RF.get() - LF.get()) >= 0.8) { // stops motors in case robot glitches out and turns indefinitely
-             	stopMotors();
+             if (Math.abs(RF.get() - LF.get()) >= 0.8) { // stops motors in case robot glitches out and turns indefinitely
+                 stopMotors();
              }
             timer.reset();
             timer.start();
@@ -272,12 +283,12 @@ public class Robot extends IterativeRobot implements PIDOutput
              }
          
              if (timer.get() > 5.2) {
-             	stopMotors();
+                 stopMotors();
              }
         }
         else if (centerAndLeft) { // start center and left switch
-       	 if (Math.abs(RF.get() - LF.get()) >= 0.8) { // stops motors in case robot glitches out and turns indefinitely
-          	stopMotors();
+            if (Math.abs(RF.get() - LF.get()) >= 0.8) { // stops motors in case robot glitches out and turns indefinitely
+              stopMotors();
           }
          timer.reset();
          timer.start();
@@ -287,12 +298,12 @@ public class Robot extends IterativeRobot implements PIDOutput
           }
       
           if (timer.get() > 5.2) {
-          	stopMotors();
+              stopMotors();
           }
         }
         else if (centerAndRight) { // start center and right switch
-       	 if (Math.abs(RF.get() - LF.get()) >= 0.8) { // stops motors in case robot glitches out and turns indefinitely
-          	stopMotors();
+            if (Math.abs(RF.get() - LF.get()) >= 0.8) { // stops motors in case robot glitches out and turns indefinitely
+              stopMotors();
           }
          timer.reset();
          timer.start();
@@ -302,12 +313,12 @@ public class Robot extends IterativeRobot implements PIDOutput
           }
       
           if (timer.get() > 5.2) {
-          	stopMotors();
+              stopMotors();
           }
         }
         else if (rightAndLeft) { // start right and left switch
-       	 if (Math.abs(RF.get() - LF.get()) >= 0.8) { // stops motors in case robot glitches out and turns indefinitely
-          	stopMotors();
+            if (Math.abs(RF.get() - LF.get()) >= 0.8) { // stops motors in case robot glitches out and turns indefinitely
+              stopMotors();
           }
          timer.reset();
          timer.start();
@@ -317,12 +328,12 @@ public class Robot extends IterativeRobot implements PIDOutput
           }
       
           if (timer.get() > 5.2) {
-          	stopMotors();
-          }	
+              stopMotors();
+          }    
         }
         else if (rightAndRight) { // start right and right switch
-        	 if (Math.abs(RF.get() - LF.get()) >= 1 ) { // stops motors in case robot glitches out and turns indefinitely
-             	stopMotors();
+             if (Math.abs(RF.get() - LF.get()) >= 1 ) { // stops motors in case robot glitches out and turns indefinitely
+                 stopMotors();
              }
             timer.reset();
             timer.start();
@@ -332,18 +343,18 @@ public class Robot extends IterativeRobot implements PIDOutput
              }
              
              while(timer.get() > 3.2 && timer.get() < 6) {
-             	turn(-20);
+                 turn(-20);
              }
              
              while(timer.get() > 6.2 && timer.get() < 9) {
-             	// outtake
+                 // outtake
              }
              if (timer.get() > 9.2) {
-             	stopMotors();
+                 stopMotors();
              }
         }
         else {
-        	stopMotors();
+            stopMotors();
         }
         /*switch (m_autoSelected) {
             case kCustomAuto:
@@ -487,12 +498,15 @@ public class Robot extends IterativeRobot implements PIDOutput
     @Override
     public void testPeriodic() {
         
-        double left = (player2.getRawAxis(1) * -.6); // *-1 to inverse left side | left_stick_y
-        double right = (player2.getRawAxis(5) * 0.6); // right_stick_y
+        double left = (player2.getRawAxis(1) * -1); // *-1 to inverse left side | left_stick_y
+        double right = (player2.getRawAxis(5) * 1); // right_stick_y
         
         double turn = (player2.getRawAxis(1) * -0.75); //  left stick  y
         double power = (player2.getRawAxis(4) * 0.75); // right stick x8
         
+        double lift = (player1.getRawAxis(5) * 0.5);
+        
+        flip.set(lift);
         boolean backPressed = (player2.getRawButton(7)); // select/back button
         
         if (backPressed && driveToggle == false) {
@@ -637,11 +651,11 @@ public class Robot extends IterativeRobot implements PIDOutput
         
 
         public void setGyro() {
-        	ahrs.zeroYaw();
-        	
+            ahrs.zeroYaw();
+            
         }
         public void driveStraight(double speed) {
-        	double leftSpeed; 
+            double leftSpeed; 
             double rightSpeed;
             
             double currentPos = ahrs.getYaw(); 
@@ -669,17 +683,17 @@ public class Robot extends IterativeRobot implements PIDOutput
            
         }
         public void turnLeft() {
-        	turn(-90);
+            turn(-90);
         }
         public void turnRight() {
-        	turn(90);
+            turn(90);
         }
         public void turn(double angle) {
-        	turnController.setSetpoint(angle);
-        	
+            turnController.setSetpoint(angle);
+            
             double turnSpeed = rotateToAngleRate;
             if (angle < 0) { // turning left
-            	LF.set(turnSpeed * 0.5);
+                LF.set(turnSpeed * 0.5);
                 LB.set(turnSpeed * 0.5);
                 
                 RF.set(turnSpeed * 0.5);
@@ -699,10 +713,10 @@ public class Robot extends IterativeRobot implements PIDOutput
                     
                 RF.set(turnSpeed * 0.5);
                 RB.set(turnSpeed * 0.5);
-                }	
+                }    
             }
             else if (angle > 0) { //turning right
-            	LF.set(turnSpeed * -0.5);
+                LF.set(turnSpeed * -0.5);
                 LB.set(turnSpeed * -0.5);
                 
                 RF.set(turnSpeed * -0.5);
